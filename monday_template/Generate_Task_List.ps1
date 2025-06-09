@@ -98,7 +98,7 @@ $tasks = @(
         Dependencies = "Setup Monitoring and Alerting"
         Subitems = "Apply CIS benchmarks;Create audit policies"
     },
-    @{ 
+    @{
         Name = "Backup Source Databases"
         Group = "Phase 3: Data Migration"
         TeamResponsible = "DBA"
@@ -109,26 +109,48 @@ $tasks = @(
         Dependencies = "Create Security Baseline"
         Subitems = "Full backups;Verify backup integrity"
     },
-    @{ 
-        Name = "Restore Databases to Target"
+    @{
+        Name = "LUN Detach/Attach Dry Run"
+        Group = "Phase 3: Data Migration"
+        TeamResponsible = "Infrastructure"
+        Priority = "High"
+        Duration = 2
+        Prerequisites = "Backups completed"
+        Environment = "TEST"
+        Dependencies = "Backup Source Databases"
+        Subitems = "Practice LUN move on test;Validate rollback"
+    },
+    @{
+        Name = "Detach Databases from Source Server"
         Group = "Phase 3: Data Migration"
         TeamResponsible = "DBA"
         Priority = "Critical"
-        Duration = 3
+        Duration = 1
         Prerequisites = "Backups completed"
-        Environment = "DEV"
-        Dependencies = "Backup Source Databases"
-        Subitems = "Restore backups;Configure recovery models"
+        Environment = "PROD"
+        Dependencies = "LUN Detach/Attach Dry Run"
+        Subitems = "Run detach scripts;Prepare LUNs for migration"
     },
-    @{ 
+    @{
+        Name = "Attach Databases on Target Server"
+        Group = "Phase 3: Data Migration"
+        TeamResponsible = "DBA"
+        Priority = "Critical"
+        Duration = 1
+        Prerequisites = "Databases detached"
+        Environment = "DEV"
+        Dependencies = "Detach Databases from Source Server"
+        Subitems = "Mount LUNs to new server;Execute attach scripts"
+    },
+    @{
         Name = "Update Schema for Compatibility"
         Group = "Phase 3: Data Migration"
         TeamResponsible = "DBA"
         Priority = "High"
         Duration = 2
-        Prerequisites = "Databases restored"
+        Prerequisites = "Databases attached"
         Environment = "DEV"
-        Dependencies = "Restore Databases to Target"
+        Dependencies = "Attach Databases on Target Server"
         Subitems = "Apply scripts;Resolve deprecated features"
     },
     @{ 
@@ -175,7 +197,7 @@ $tasks = @(
         Dependencies = "Functional Validation in Test"
         Subitems = "Collect baselines;Compare with source"
     },
-    @{ 
+    @{
         Name = "User Acceptance Testing"
         Group = "Phase 4: Testing & Validation"
         TeamResponsible = "App Owners"
@@ -186,7 +208,18 @@ $tasks = @(
         Dependencies = "Performance Benchmarking"
         Subitems = "Gather sign-off;Report issues"
     },
-    @{ 
+    @{
+        Name = "Server Rename and Re-IP Planning"
+        Group = "Phase 4: Testing & Validation"
+        TeamResponsible = "Infrastructure"
+        Priority = "Medium"
+        Duration = 1
+        Prerequisites = "Performance benchmarking"
+        Environment = "TEST"
+        Dependencies = "User Acceptance Testing"
+        Subitems = "Document new server names;Plan IP changes;Update DNS records"
+    },
+    @{
         Name = "Final Cutover Preparation"
         Group = "Phase 5: Cutover"
         TeamResponsible = "Project Mgmt"
@@ -197,8 +230,8 @@ $tasks = @(
         Dependencies = "User Acceptance Testing"
         Subitems = "Finalize schedule;Notify stakeholders"
     },
-    @{ 
-        Name = "Production Cutover and Verification"
+    @{
+        Name = "Perform Database Detach and LUN Migration"
         Group = "Phase 5: Cutover"
         TeamResponsible = "DBA"
         Priority = "Critical"
@@ -206,6 +239,28 @@ $tasks = @(
         Prerequisites = "Final cutover preparation"
         Environment = "PROD"
         Dependencies = "Final Cutover Preparation"
+        Subitems = "Detach databases;Move LUNs to new server;Attach databases"
+    },
+    @{
+        Name = "Rename and Re-IP Servers"
+        Group = "Phase 5: Cutover"
+        TeamResponsible = "Infrastructure"
+        Priority = "Critical"
+        Duration = 1
+        Prerequisites = "Perform Database Detach and LUN Migration"
+        Environment = "PROD"
+        Dependencies = "Perform Database Detach and LUN Migration"
+        Subitems = "Apply new server names;Configure new IPs;Update DNS"
+    },
+    @{
+        Name = "Production Cutover and Verification"
+        Group = "Phase 5: Cutover"
+        TeamResponsible = "DBA"
+        Priority = "Critical"
+        Duration = 1
+        Prerequisites = "Servers renamed"
+        Environment = "PROD"
+        Dependencies = "Rename and Re-IP Servers"
         Subitems = "Switch connection strings;Verify application"
     },
     @{ 

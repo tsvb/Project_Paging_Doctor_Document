@@ -1,6 +1,6 @@
 # Monday.com SQL Migration Template
 
-This folder contains resources to set up a SQL migration project in Monday.com without using the API. Use the provided CSV file for bulk task import and the PowerShell script to generate additional tasks if required.
+This folder contains resources to set up a SQL migration project in Monday.com without using the API. Use the provided CSV file for bulk task import and the PowerShell script to generate additional tasks if required. The script now models a side-by-side migration where databases are detached, LUNs moved, servers renamed and re-IP'd, and databases reattached.
 
 ## Files
 
